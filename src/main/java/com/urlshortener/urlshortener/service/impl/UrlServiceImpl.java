@@ -1,10 +1,12 @@
 package com.urlshortener.urlshortener.service.impl;
 
+import java.net.URI;
 import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.urlshortener.urlshortener.exception.UrlNotFoundException;
 import com.urlshortener.urlshortener.model.Url;
 import com.urlshortener.urlshortener.repository.UrlRepository;
 import com.urlshortener.urlshortener.service.UrlService;
@@ -28,9 +30,12 @@ public class UrlServiceImpl implements UrlService {
     }
 
     @Override
-    public String redirect(String shortUrl) {
-        Url url = urlRepository.findByShortUrl(shortUrl);
-        return url != null ? url.getOriginalUrl() : "Url not found";
+    public URI redirect(String shortUrl) {
+        Url originalUrl = urlRepository.findByShortUrl(shortUrl)
+        .orElseThrow(() -> new UrlNotFoundException("URL não encontrada"));
+        //orElseThrow existe apenas no Optional, lembrar de quando for utilizar
+        //passar isso com o tipo do Model no Repository
+        return URI.create(originalUrl.getOriginalUrl());
     }
 
     private String generateShortUrl() {
